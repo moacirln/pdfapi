@@ -167,6 +167,24 @@ app.get("/api/models", authMiddleware, async (req, res) => {
   }
 });
 
+// rota de fetch usuarios
+app.get("/api/users", authMiddleware, async (req, res) => {
+  try {
+    // Query segura
+    const query = `SELECT * FROM usuarios`;
+    const result = await pool.query(query);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Registro não encontrado" });
+    }
+
+    res.status(200).json(result.rows);
+  } catch (err) {
+    console.error("Erro no fetch:", err);
+    res.status(500).json({ error: "Erro na aquisição dos dados" });
+  }
+});
+
 // rota de fetch envios
 app.get("/api/envios", authMiddleware, async (req, res) => {
   try {
