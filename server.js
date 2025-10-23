@@ -261,7 +261,7 @@ app.delete("/api/delete", authMiddleware, async (req, res) => {
     }
 
     // Tabelas permitidas
-    const allowedTables = ['marcacoes', 'modelos', 'orders'];
+    const allowedTables = ['marcacoes', 'modelos', 'usuarios'];
     if (!allowedTables.includes(table)) {
       return res.status(400).json({ error: "Nome de tabela inválido" });
     }
