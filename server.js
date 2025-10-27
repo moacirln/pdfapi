@@ -12,11 +12,13 @@ app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 // SECRET do JWT
-const SECRET = process.env.JWT_SECRET;
+//const SECRET = process.env.JWT_SECRET;
+const SECRET = "fhb085432uj67hetfvs2789f5432bnk5oiqvc529"
 
 // conexão com o PostgreSQL
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  //connectionString: process.env.DATABASE_URL,
+  connectionString: "postgresql://postgres:deiYRuSStHtAOTBBhHLZvDVLjUAeHNwI@interchange.proxy.rlwy.net:21596/railway",
 });
 
 //Middleware de proteção de rotas
@@ -81,7 +83,7 @@ app.post("/api/envios", authMiddleware, async (req, res) => {
     const id_envio = insertResult.rows[0].id;
 
     // Aguarda 5 segundos para o processamento ocorrer
-    await new Promise((resolve) => setTimeout(resolve, 10000));
+    await new Promise((resolve) => setTimeout(resolve, 25000));
 
     // Busca na tabela processados
     const processadoResult = await pool.query(
@@ -343,6 +345,38 @@ app.patch("/api/update/:id", authMiddleware, async (req, res) => {
 });
 
 
+//atualiza um referência de um modelo
+app.patch("/api/reference/:id", authMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { referencia } = req.body;
+
+    if (!id) {
+      return res.status(400).json({ error: "Requisição inválida" });
+    }
+
+    const query = `
+      UPDATE modelos
+      SET referencia = $1
+      WHERE id = $2
+      RETURNING *;
+    `;
+
+    const result = await pool.query(query, [referencia, Number(id)]);
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: "Registro não encontrado" });
+    }
+
+    res.status(200).json({ message: "Registro atualizado com sucesso", updated: result.rows[0] });
+  } catch (err) {
+    console.error("Erro no update:", err);
+    res.status(500).json({ error: "Erro ao atualizar registro" });
+  }
+});
+
+
+//Rota de Registro de usuários
 app.post("/api/register", authMiddleware, async (req, res) => {
   try {
     const { nome, email, senha } = req.body;
@@ -365,6 +399,8 @@ app.post("/api/register", authMiddleware, async (req, res) => {
   }
 })
 
+
+//Rota de autenticação
 app.post("/api/login", async (req, res) => {
   console.log("aqui")
   try {
